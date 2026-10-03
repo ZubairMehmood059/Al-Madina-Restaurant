@@ -38,7 +38,7 @@ Al Madina Restaurant serves authentic Pakistani cuisine, including biryani, kara
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.19+ or 22.12+
 - npm
 
 ### Install dependencies
@@ -79,6 +79,17 @@ npm run build
 npm run preview
 npm run lint
 ```
+
+## AWS deployment
+
+The GitHub Actions workflow builds the site on pushes to `main` or `master`. To enable AWS S3 and CloudFront deployment, configure these repository secrets under **Settings → Secrets and variables → Actions**:
+
+- `AWS_ROLE_TO_ASSUME` — ARN of an IAM role trusted for GitHub Actions OIDC from this repository
+- `AWS_S3_BUCKET_NAME` — name of the S3 bucket configured to host the static site
+- `AWS_REGION` — optional; defaults to `ap-south-1`
+- `CLOUDFRONT_DISTRIBUTION_ID` — optional; CloudFront distribution to invalidate after deployment
+
+Without `AWS_ROLE_TO_ASSUME` and `AWS_S3_BUCKET_NAME`, the workflow will still run the build and quality checks, then skip deployment with a warning. The IAM role needs permission to sync the S3 bucket and, if configured, invalidate the CloudFront distribution.
 
 ## Notes
 

@@ -15,6 +15,8 @@ jobs:
   build-and-test:
     name: Build & Quality Check
     runs-on: ubuntu-latest
+    outputs:
+      aws_deploy_configured: ${{ steps.aws-config.outputs.configured }}
 
     steps:
       - name: Checkout Code
@@ -24,7 +26,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install Dependencies
         run: npm ci
@@ -37,6 +39,20 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Check AWS deployment configuration
+        id: aws-config
+        env:
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+        run: |
+          if [ -n "$AWS_ROLE_TO_ASSUME" ] && [ -n "$AWS_S3_BUCKET_NAME" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "AWS deployment secrets are configured."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Build passed, but AWS deployment was skipped. Configure repository secrets AWS_ROLE_TO_ASSUME and AWS_S3_BUCKET_NAME to enable deployment."
+          fi
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -48,7 +64,7 @@ jobs:
     name: Deploy to AWS S3 & CloudFront
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && needs.build-and-test.outputs.aws_deploy_configured == 'true'
 
     steps:
       - name: Download Build Artifacts
