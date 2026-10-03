@@ -1,0 +1,6 @@
+{
+  "name": "Al Madina Restaurant",
+  "description": "Authentic Pakistani cuisine, signature biryani, sizzling karahi, and BBQ served 24/7 in Police Lines Quarters, Karachi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
